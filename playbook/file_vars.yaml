@@ -1,0 +1,6 @@
+---
+passout: ../output/PASSWD-perm.txt
+passwd: ../output/PASSWD-file.txt
+shadowout: ../output/SHADOW-perm.txt
+shadow: ../output/SHADOW-file.txt
+logdef: ../output/LOGIN.DEFS-file.txt

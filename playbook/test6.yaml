@@ -1,0 +1,51 @@
+---
+
+- name: ansible playbook
+  ignore_errors: yes
+  hosts: localhost
+
+  tasks:
+  - include_vars: file_vars.yaml
+
+  - name: Maximum number of days a password may be used should be 90
+    shell: grep ^PASS_MAX_DAYS {{ logdef }}
+    register: out711
+    failed_when: >
+      'PASS_MAX_DAYS\t90'  not in out711.stdout
+  - debug: msg={{ out711.stdout }}
+
+  - name: Minimum number of days allowed between password changes should be 1
+    shell: grep ^PASS_MIN_DAYS {{ logdef }}
+    register: out712
+    failed_when: >
+      'PASS_MIN_DAYS\t1'  not in out712.stdout
+  - debug: msg={{ out712.stdout }}
+
+  - name: Minimum acceptable password length should be 8
+    shell: grep ^PASS_MIN_LEN {{ logdef }}
+    register: out713
+    failed_when: >
+      'PASS_MIN_LEN\t8'  not in out713.stdout
+  - debug: msg={{ out713.stdout }}
+
+
+  - name: Number of days warning given before a password expires should be 7
+    shell: grep ^PASS_WARN_AGE {{ logdef }}
+    register: out714
+    failed_when: >
+      'PASS_WARN_AGE\t7'  not in out714.stdout
+  - debug: msg={{ out714.stdout }}
+
+  - name: Maximum number of login retries in case of bad password should be 5
+    shell: grep ^LOGIN_RETRIES {{ logdef }}
+    register: out715
+    failed_when: >
+      'LOGIN_RETRIES\t5'  not in out715.stdout
+  - debug: msg={{ out715.stdout }}
+
+  - name: password encryption algorithm should be SHA512
+    shell: grep ^ENCRYPT_METHOD {{ logdef }}
+    register: out716
+    failed_when: >
+      'ENCRYPT_METHOD SHA512'  not in out716.stdout
+  - debug: msg={{ out716.stdout }}

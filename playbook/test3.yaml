@@ -1,0 +1,32 @@
+---
+
+- name: ansible playbook
+  ignore_errors: yes
+  hosts: localhost
+
+  tasks:
+  - include_vars: file_vars.yaml
+
+  - name: "Disable System Accounts"
+    shell: awk -F':' '($3<500 && $1!="root" && $1!="sync" && $1!="shutdown" && $1!="sync" && $1!="shutdown" && $1!="halt" && $7!="/sbin/nologin") { print $1 }' {{ passwd }} | grep -qx 'root'
+    register: out6213
+    failed_when: out6213.stdout != ''
+  - debug: msg={{ out6213.stdout }}
+
+  - name: 5.5.2 Ensure system accounts are secured 
+    shell: awk -F':' '($1!="root" && $1!="sync" && $1!="shutdown" && $1!="halt" && $1!~/^\+/ && $3<'"$(awk '/^\s*UID_MIN/{print $2}' {{ logdef }})"' && $7!="'"$(which nologin)"'" && $7!="/bin/false") {print}' "{{ passwd }}"
+    register: out5521
+    failed_when: out5521.stdout != ''
+  - debug: msg={{ out5521.stdout }}
+
+  - name: 5.5.2 Ensure system accounts are secured 
+    shell: awk -F':' '($1!="root" && $1!~/^\+/ && $3<'"$(awk '/^\s*UID_MIN/{print $2}' {{ logdef }})"') {print $1}' {{ passwd }} | xargs -I '{}' passwd -S '{}' | awk '($2!="L" && $2!="LK") {print $1}'
+    register: out5522
+    failed_when: out5522.stdout != ''
+  - debug: msg={{ out5522.stdout }}
+
+  - name: 6.2.2 Ensure /etc/shadow password fields are not empty
+    shell: awk -F':' '($2 == "" ) { print $1 }' {{ shadow }}
+    register: out622
+    failed_when: out622.stdout != ''
+  - debug: msg={{ out622.stdout }}

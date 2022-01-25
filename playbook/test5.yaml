@@ -1,0 +1,27 @@
+---
+
+- name: ansible playbook
+  ignore_errors: yes
+  hosts: localhost
+
+  tasks:
+  - include_vars: file_vars.yaml
+  
+  - name: ensure password is not empty in shadow file
+    shell: awk -F':' '($2 == "" ) { print $1 }' {{ shadow }}
+    register: out6211
+    failed_when: out6211.stdout != ''
+  - debug: msg={{ out6211.stdout }}
+
+  - name: determine password encryption algorithm in shadow file
+    shell: awk -F':' '($2 != "" ) { print $2 }' {{ shadow }} | awk -F'$' '{ print $2 }'
+    register: out6212
+    failed_when: out6212.stdout != ''
+  - debug: msg={{ out6212.stdout }}
+
+  - name: 6.2.1 Ensure accounts in /etc/passwd use shadowed passwords
+    shell: awk -F':' '($2 == "x" ) { print $1 }' {{ shadow }}
+    register: out6213
+    failed_when: out6213.stdout != ''
+  - debug: msg={{ out6213.stdout }}
+

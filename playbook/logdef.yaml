@@ -1,0 +1,54 @@
+# {{ if .Vars.ubuntu20cis_rule_6_1_2 }}
+---
+- name: ansible playbook
+  ignore_errors: yes
+  hosts: localhost
+  vars:
+    logdef: /Users/vyang/Desktop/testing/output/LOGIN.DEFS-file.txt
+    shadow: /Users/vyang/Desktop/testing/output/SHADOW-file.txt
+    # passwd: ~/Desktop/pass
+  tasks:
+  - name: Set Password Expiration Days to 90
+    shell: grep ^PASS_MAX_DAYS {{ logdef }}
+    register: out711
+    failed_when: >
+      'PASS_MAX_DAYS\t90'  not in out711.stdout
+    # Print all contents of the shell task's output.
+  # - debug: msg={{ out711.stdout }}
+
+  - name: Set Password Change Minimum Number of Days to 1
+    shell: grep ^PASS_MIN_DAYS {{ logdef }}
+    register: out712
+    failed_when: >
+      'PASS_MIN_DAYS\t1'  not in out712.stdout
+    # Print all contents of the shell task's output.
+
+  - name: Verify that all users' PASS_MIN_DAYS conforms to site policy (no less than 1 day)
+    shell: 'grep -E ^[^:]+:[^\!*] {{shadow}} | cut -d: -f1,4'
+    register: out713
+    failed_when: >
+      '^[^:]+:[^\!*]\t14'  not in out713.stdout
+    # Print all contents of the shell task's output.
+  - debug: msg={{ out713.stdout }}
+
+  - name: Set Password Expiring Warning Days to 7
+    shell: grep ^PASS_WARN_AGE {{ logdef }}
+    register: out714
+    failed_when: >
+      'PASS_WARN_AGE\t7'  not in out713.stdout
+  - debug: msg={{ out714.stdout }}
+    # Print all contents of the shell task's output.
+  
+  - name: verify that all users' PASS_WARN_AGE conforms to site policy (no less than 7 days)
+    shell: 'grep -E ^[^:]+:[^\!*] {{shadow}} | cut -d: -f1,6'
+    register: out715
+    failed_when: >
+      '^[^:]+:[^\!*]\t7'  not in out715.stdout
+    # Print all contents of the shell task's output.
+  - debug: msg={{ out715.stdout }}
+
+  - name: 5.5.1.4 Ensure inactive password lock is 30 days or less
+    shell: awk -F':' '(/^[^:]+:[^!*]/ && ($7~/(\s*|-1)/ || $7>30)){print $1 ' ' $7}' {{ shadow }}
+    register: out5514
+    failed_when: >
+      out5514.stdout != ''

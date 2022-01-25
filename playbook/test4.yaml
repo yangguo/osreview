@@ -1,0 +1,14 @@
+---
+
+- name: ansible playbook
+  ignore_errors: yes
+  hosts: localhost
+
+  tasks:
+  - include_vars: file_vars.yaml
+  
+  - name: determine accounts with shell (command line) access in passwd file
+    shell: grep -v '^#' {{ passwd }} | awk -F':' '($7 != "/sbin/nologin" && $7 != "/bin/false") { print $1 }'
+    register: out6213
+    failed_when: out6213.stdout != ''
+  - debug: msg={{ out6213.stdout }}
