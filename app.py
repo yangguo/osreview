@@ -10,6 +10,7 @@ def main():
     if input_method == '手动输入':
         output_text = st.text_area('主输出文件 包括：SHADOW/PASSWD/GROUP等')
         module_text = st.text_area('模块输出文件 包括：LOGIN.DEFS/CROND等')
+        keydirs_text=st.text_area('主要目录文件 包括：/bin/dev/etc/usr/var等')
         # save txt file as bytesio
         # if output_text != '' and module_text != '':
             # save button
@@ -18,8 +19,10 @@ def main():
             # save file
             output_name = 'output'
             module_name = 'module'
+            keydirs_name = 'keydirs'
             save_osfile(output_name, output_text)
             save_osfile(module_name, module_text)
+            save_osfile(keydirs_name, keydirs_text)
             st.sidebar.success('文件保存成功')
         # extract button
         # extract = st.sidebar.button('提取配置信息')
@@ -38,7 +41,7 @@ def main():
         # if config_check_button:
             with st.spinner('检查配置中...'):
                 # get playbook list from 1 to 15
-                for i in range(1, 7):
+                for i in range(1, 10):
                     # get playbook name
                     playbook_name = 'test' + str(i)+'.yaml'
                     # get playbook content
@@ -52,8 +55,8 @@ def main():
                     statdf=pd.DataFrame(stats)
                     st.subheader('检查结果'+str(i))
                     st.table(resdf)
-                    st.subheader('检查统计'+str(i))
-                    st.table(statdf)
+                    # st.subheader('检查统计'+str(i))
+                    # st.table(statdf)
                     # print success message
                     st.sidebar.success('检查完成'+str(i))
                     

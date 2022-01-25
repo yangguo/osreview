@@ -7,8 +7,8 @@
   tasks:
   - include_vars: file_vars.yaml
 
-  - name: "AUTOMATED | 6.2.13 | AUDIT | Ensure no duplicate UIDs exist | Check for duplicate UIDs"
+  - name: Ensure no duplicate UIDs exist
     shell: "pwck -r | awk -F: '{if ($3 in uid) print $1 ; else uid[$3]}' {{passwd}}"
     register: out6213
     failed_when: out6213.stdout | length > 0
-  - debug: msg={{ out6213.stdout }}
+  # - debug: msg={{ out6213.stdout }}

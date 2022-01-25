@@ -11,4 +11,4 @@
     shell: grep -v '^#' {{ passwd }} | awk -F':' '($7 != "/sbin/nologin" && $7 != "/bin/false") { print $1 }'
     register: out6213
     failed_when: out6213.stdout != ''
-  - debug: msg={{ out6213.stdout }}
+  # - debug: msg={{ out6213.stdout }}

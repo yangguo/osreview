@@ -4,3 +4,9 @@ passwd: ../output/PASSWD-file.txt
 shadowout: ../output/SHADOW-perm.txt
 shadow: ../output/SHADOW-file.txt
 logdef: ../output/LOGIN.DEFS-file.txt
+cronallowout: ../output/CRON.ALLOW-perm.txt
+cronallow: ../output/CRON.ALLOW-file.txt
+crondenyout: ../output/CRON.DENY-perm.txt
+crondeny: ../output/CRON.DENY-file.txt
+varspoolcron: ../output/var-spool-cron.txt
+keydirs: ../output/keydirs.txt

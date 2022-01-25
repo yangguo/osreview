@@ -1,0 +1,34 @@
+---
+
+- name: ansible playbook
+  ignore_errors: yes
+  hosts: localhost
+
+  tasks:
+  - include_vars: file_vars.yaml
+  
+  - name: Check restrictive permissions on the cronallow files
+    shell: grep root {{ cronallowout }} 
+    register: out81
+    failed_when: >
+      'root root' not in out81.stdout
+  # - debug: msg={{ out81.stdout }}
+
+  - name: Check the content of the cronallow files
+    shell: find {{ cronallow }} -type f -exec cat {} \; | grep -v '^#' | sort | uniq
+    register: out82
+    failed_when: out82.stdout != ''
+  # - debug: msg={{ out82.stdout }}
+
+  - name: Check restrictive permissions on the crondeny files
+    shell: grep root {{ crondenyout }}
+    register: out83
+    failed_when: >
+      'root root' not in out83.stdout
+  # - debug: msg={{ out83.stdout }}
+
+  - name: Check the content of the crondeny files
+    shell: find {{ crondeny }} -type f -exec cat {} \; | grep -v '^#' | sort | uniq
+    register: out84
+    failed_when: out84.stdout != ''
+  # - debug: msg={{ out84.stdout }}

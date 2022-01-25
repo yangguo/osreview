@@ -27,6 +27,14 @@ def save_file_text(file_path, text):
     with open(file_path, 'w', encoding='utf-8') as f:
         f.write(text)
 
+# extract text by regex 
+def extract_text_by_regex(text, regex):
+    match = re.search(regex, text, re.MULTILINE)
+    # print(match)
+    if match:
+        return match.group(1)
+    else:
+        return 'None'
 
 # extract text by regex and return two groups
 def extract_text_by_regex_two_groups(text, regex):
@@ -37,13 +45,24 @@ def extract_text_by_regex_two_groups(text, regex):
     else:
         return 'None', 'None'
 
+# extract all match by regex and return three group lists
+def extract_text_by_regex_two_groups_all(text, regex):
+    match = re.findall(regex, text, re.MULTILINE)
+    # convert match to list
+    group1ls = []
+    group2ls = []
+    group3ls = []
+    for m in match:
+        group1ls.append(m[0])
+        group2ls.append(m[1])
+        group3ls.append(m[2])
+    return group1ls, group2ls, group3ls
 
 # extract review files
 def extract_review_files():
     outputtxt = read_file_text(uploadfolder + 'output.txt')
-    # print(fulltxt)
-
     osmotxt = read_file_text(uploadfolder + 'module.txt')
+    keydirstxt = read_file_text(uploadfolder + 'keydirs.txt')
 
     filels = [
         'SHADOW', 'PASSWD', 'GROUP', 'PROFILE', 'HOSTS']
@@ -107,6 +126,30 @@ def extract_review_files():
         namels.append(cronname)
         permoutputls.append(text)
         fileoutputls.append(text2)
+
+    # get var/spool/cron/
+    regex=r'\[FILE\]: (.*)\n(.*/var/spool/cron.*)\n[=]{52}\n([\S\s]+?)[=]{52}'
+    # extract text
+    g1,g2,g3 = extract_text_by_regex_two_groups_all(outputtxt, regex)
+    # combine text
+    text = ''
+    for i in range(len(g1)):
+        text += g1[i] + '\n' + g2[i] + '\n' + g3[i] + '\n'
+    filepath=uploadfolder + 'var-spool-cron.txt'
+    save_file_text(filepath, text)
+    namels.append('var-spool-cron')
+    permoutputls.append('')
+    fileoutputls.append(text)
+
+    # get key directories
+    regex=r'/:\n.*\n([\s\S]+?)[=]{52}'
+    # extract text
+    text = extract_text_by_regex(keydirstxt, regex)
+    filepath=uploadfolder + 'keydirs.txt'
+    save_file_text(filepath, text)
+    namels.append('keydirs')
+    permoutputls.append('')
+    fileoutputls.append(text)
 
     return namels, permoutputls, fileoutputls
 

@@ -7,39 +7,39 @@
   tasks:
   - include_vars: file_vars.yaml
 
-  - name: 6.2.6 Ensure root is the only UID 0 account
+  - name: Ensure root is the only UID 0 account
     shell: awk -F':' '($3 == 0) { print $1 }' {{ passwd }} | grep -qx 'root'
     register: out626
     failed_when: out626.stdout != ''
-  - debug: msg={{ out626.stdout }}
+  # - debug: msg={{ out626.stdout }}
 
 
-  - name: 6.1.2 Ensure permissions on /etc/passwd are configured 
+  - name: Ensure permissions on /etc/passwd are configured 
     shell: grep ^-rw-r--r-- {{ passout }}
     register: out612
     failed_when: >
       '-rw-r--r--'  not in out612.stdout
-  - debug: msg={{ out612.stdout }}
+  # - debug: msg={{ out612.stdout }}
 
   - name: Ensure owner of /etc/passwd is root
     shell: grep root {{ passout }}
     register: out613
     failed_when: >
       'root root' not in out613.stdout
-  - debug: msg={{ out613.stdout }}
+  # - debug: msg={{ out613.stdout }}
 
-  - name: 6.1.6 Ensure permissions on /etc/shadow are configured
+  - name: Ensure permissions on /etc/shadow are configured
     shell: grep ^-r-------- {{ shadowout }}
     register: out616
     failed_when: >
       '-r--------'  not in out616.stdout
-  - debug: msg={{ out616.stdout }}
+  # - debug: msg={{ out616.stdout }}
   
   - name: Ensure owner of /etc/shadow is root
     shell: grep root {{ shadowout }}
     register: out617
     failed_when: >
       'root root' not in out617.stdout
-  - debug: msg={{ out617.stdout }}
+  # - debug: msg={{ out617.stdout }}
 
  
