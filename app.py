@@ -16,7 +16,7 @@ def main():
         userfiles_text=st.text_area('用户文件 包括：/rhosts/netrc/profile等')
         logs_text=st.text_area('日志文件 包括：/var/log/messages/secure等')
         # save button
-        filesave = st.sidebar.button('开始配置检查')
+        filesave = st.sidebar.button('文件保存')
         if filesave:
             # save file
             output_name = 'output'
@@ -33,50 +33,73 @@ def main():
             save_osfile(logs_name, logs_text)
             st.sidebar.success('文件保存成功')
 
-            namels, permoutputls, fileoutputls=extract_review_files()
-            st.sidebar.success('提取配置信息成功')
-            st.subheader('系统配置信息')
-            # print extraction result
-            for name, permoutput, fileoutput in zip(namels, permoutputls, fileoutputls):
-                st.warning(name)
-                st.write(permoutput)
-                # display raw text
-                st.text(fileoutput)
+   
+    elif input_method == '上传文件':
+        # upload file
+        uploaded_file = st.file_uploader("上传文件")
 
-            # get full result
-            resls=[]
-            with st.spinner('检查配置中...'):
-                # get playbook list from 1 to 15
-                for i in range(1, 16):
-                    # get playbook name
-                    playbook_name = 'test' + str(i)+'.yaml'
-                    # get playbook content
-                    taskls,outputls,stats=os_config_files_review(playbook_name)
-                    # st.write(taskls)
-                    # st.write(outputls)
-                    # st.write(stats)
-                    testname='test'+str(i)
-                    # convert taskls and outputls to dataframe
-                    resdf=pd.DataFrame({'name':testname,'task':taskls,'output':outputls})
-                    # convert stats to dataframe
-                    statdf=pd.DataFrame(stats)
-                    st.subheader('检查结果'+str(i))
-                    st.table(resdf)
-                    resls.append(resdf)
-                    # display raw text
-                    # for task,output in zip(taskls,outputls):
-                    #     st.info(task)
-                    #     st.markdown(output, unsafe_allow_html=True)
-                    # st.subheader('检查统计'+str(i))
-                    # st.table(statdf)
-                    # print success message
-                    st.sidebar.success('检查完成'+str(i))
-            # combine all dataframe
-            alldf=pd.concat(resls)
-            # download csv file
-            st.subheader('检查结果')
-            st.download_button(data=alldf.to_csv(index=False),label='下载检查结果',file_name='osreview.csv')
-  
+        # choose file using dropdown
+        file_name = st.sidebar.selectbox('选择文件类型', ('output', 'module', 'keydirs', 'worldwritable', 'userfiles', 'logs'))
+
+        # save button
+        filesave = st.sidebar.button('文件保存')
+        if filesave:
+            if uploaded_file is not None:
+                # read file
+                file_text = uploaded_file.read().decode("utf-8")
+                save_osfile(file_name,file_text)
+                st.sidebar.success('文件保存成功')
+            else:
+                st.sidebar.error('请选择文件')
+
+    # config file review
+    config_review = st.sidebar.button('配置文件检查')
+    if config_review:
+        namels, permoutputls, fileoutputls=extract_review_files()
+        st.sidebar.success('提取配置信息成功')
+        st.subheader('系统配置信息')
+        # print extraction result
+        for name, permoutput, fileoutput in zip(namels, permoutputls, fileoutputls):
+            st.warning(name)
+            st.write(permoutput)
+            # display raw text
+            st.text(fileoutput)
+
+        # get full result
+        resls=[]
+        with st.spinner('检查配置中...'):
+            # get playbook list from 1 to 15
+            for i in range(1, 16):
+                # get playbook name
+                playbook_name = 'test' + str(i)+'.yaml'
+                # get playbook content
+                taskls,outputls,stats=os_config_files_review(playbook_name)
+                # st.write(taskls)
+                # st.write(outputls)
+                # st.write(stats)
+                testname='test'+str(i)
+                # convert taskls and outputls to dataframe
+                resdf=pd.DataFrame({'name':testname,'task':taskls,'output':outputls})
+                # convert stats to dataframe
+                statdf=pd.DataFrame(stats)
+                st.subheader('检查结果'+str(i))
+                st.table(resdf)
+                resls.append(resdf)
+                # display raw text
+                # for task,output in zip(taskls,outputls):
+                #     st.info(task)
+                #     st.markdown(output, unsafe_allow_html=True)
+                # st.subheader('检查统计'+str(i))
+                # st.table(statdf)
+                # print success message
+                st.sidebar.success('检查完成'+str(i))
+        # combine all dataframe
+        alldf=pd.concat(resls)
+        # download csv file
+        st.subheader('检查结果')
+        st.download_button(data=alldf.to_csv(index=False),label='下载检查结果',file_name='osreview.csv')
+ 
+
 
 if __name__ == '__main__':
     main()
