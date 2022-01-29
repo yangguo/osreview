@@ -1,0 +1,32 @@
+---
+
+- name: ansible playbook
+  ignore_errors: yes
+  hosts: localhost
+
+  tasks:
+  - include_vars: file_vars.yaml
+  
+  - name: Check network controls - inetd.conf
+    shell: cat {{ inetdconf }}
+    register: out121
+    failed_when: out121.stdout != ''
+  # - debug: msg={{ out121.stdout }}
+
+  - name: Check network controls - hosts.equiv
+    shell: cat {{ hostsequiv }}
+    register: out122
+    failed_when: out122.stdout != ''
+  # - debug: msg={{ out122.stdout }}
+
+  - name: Check network controls - netrc
+    shell: cat {{ netrc }}
+    register: out123
+    failed_when: out123.stdout == ''
+  # - debug: msg={{ out123.stdout }}
+  
+  - name: Check network controls - rhosts
+    shell: cat {{ rhosts }}
+    register: out124
+    failed_when: out124.stdout == ''
+  # - debug: msg={{ out124.stdout }}

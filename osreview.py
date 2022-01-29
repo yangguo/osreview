@@ -58,18 +58,30 @@ def extract_text_by_regex_two_groups_all(text, regex):
         group3ls.append(m[2])
     return group1ls, group2ls, group3ls
 
+# extract all match by regex and return list
+def extract_text_by_regex_all(text, regex):
+    match = re.findall(regex, text, re.MULTILINE)
+    # convert match to list
+    matchls = []
+    for m in match:
+        matchls.append(m)
+    return matchls
+
 # extract review files
 def extract_review_files():
     outputtxt = read_file_text(uploadfolder + 'output.txt')
     osmotxt = read_file_text(uploadfolder + 'module.txt')
     keydirstxt = read_file_text(uploadfolder + 'keydirs.txt')
+    worldwritabletxt = read_file_text(uploadfolder + 'worldwritable.txt')
+    userfilestxt = read_file_text(uploadfolder + 'userfiles.txt')
+    logstxt = read_file_text(uploadfolder + 'logs.txt')
 
     filels = [
         'SHADOW', 'PASSWD', 'GROUP', 'PROFILE', 'HOSTS']
 
     osmols = ['LOGIN.DEFS', 'AUTHCONFIG']
 
-    cronls=['CRON.ALLOW','CRON.DENY']
+    cronls=['CRON.ALLOW','CRON.DENY','INETD.CONF','HOSTS.EQUIV','SYSLOG.CONF']
 
     namels=[]
     permoutputls = []
@@ -148,6 +160,83 @@ def extract_review_files():
     filepath=uploadfolder + 'keydirs.txt'
     save_file_text(filepath, text)
     namels.append('keydirs')
+    permoutputls.append('')
+    fileoutputls.append(text)
+
+    # get world writable
+    filepath=uploadfolder + 'worldwritable.txt'
+    save_file_text(filepath, worldwritabletxt)
+    namels.append('worldwritable')
+    permoutputls.append('')
+    fileoutputls.append(worldwritabletxt)
+
+    # get os version
+    regex=r"/bin/uname -a\n[=]{52}\n([\s\S]+?)[=]{52}"
+    # extract text
+    text = extract_text_by_regex(outputtxt, regex)
+    filepath=uploadfolder + 'os-version.txt'
+    save_file_text(filepath, text)
+    namels.append('os-version')
+    permoutputls.append('')
+    fileoutputls.append(text)
+
+    # get netrc
+    regex=r"(.*.netrc .*)"
+    # extract text
+    textls = extract_text_by_regex_all(userfilestxt, regex)
+    text = ''
+    for t in textls:
+        text += t + '\n'
+    filepath=uploadfolder + 'netrc.txt'
+    save_file_text(filepath, text)
+    namels.append('netrc')
+    permoutputls.append('')
+    fileoutputls.append(text)
+
+    # get rhosts
+    regex=r"(.*.rhosts .*)"
+    # extract text
+    textls = extract_text_by_regex_all(userfilestxt, regex)
+    text = ''
+    for t in textls:
+        text += t + '\n'
+    filepath=uploadfolder + 'rhosts.txt'
+    save_file_text(filepath, text)
+    namels.append('rhosts')
+    permoutputls.append('')
+    fileoutputls.append(text)
+
+    # get /etc/xinetd.d
+    regex=r"\[FILE\]: (.*)\n(.*/etc/xinetd.d.*)\n[=]{52}\n([\S\s]+?)[=]{52}"
+    # extract text
+    g1,g2,g3 = extract_text_by_regex_two_groups_all(osmotxt, regex)
+    # combine text
+    text = ''
+    for i in range(len(g1)):
+        text += g1[i] + '\n' + g2[i] + '\n' + g3[i] + '\n'
+    filepath=uploadfolder + 'xinetd.txt'
+    save_file_text(filepath, text)
+    namels.append('xinetd')
+    permoutputls.append('')
+    fileoutputls.append(text)
+
+    # get netstat
+    regex=r"CHECK_BEGIN: DO_NETSTAT_A\n[=]{52}\n\n([\s\S]+?)[=]{52}"
+    # extract text
+    text = extract_text_by_regex(outputtxt, regex)
+    filepath=uploadfolder + 'netstat.txt'
+    save_file_text(filepath, text)
+    namels.append('netstat')
+    permoutputls.append('')
+    fileoutputls.append(text)
+
+    # ge ten lines of login logs
+    regex=r'Using: \/usr\/bin\/last.*\n[=]{52}\nLOGS_BEGIN: DO_LAST.*\n.*\n(.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*)'
+    # extract text
+    text = extract_text_by_regex(logstxt, regex)
+    filepath=uploadfolder + 'loginlogs.txt'
+    save_file_text(filepath, text)
+    namels.append('login_logs')
     permoutputls.append('')
     fileoutputls.append(text)
 

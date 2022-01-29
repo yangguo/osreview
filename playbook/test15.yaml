@@ -1,0 +1,30 @@
+---
+
+- name: ansible playbook
+  ignore_errors: yes
+  hosts: localhost
+
+  tasks:
+  - include_vars: file_vars.yaml
+  
+  - name: Ensure permissions on /etc/group are configured 
+    shell: grep ^-rw-r--r-- {{ groupout }}
+    register: out151
+    failed_when: >
+      '-rw-r--r--'  not in out151.stdout
+  # - debug: msg={{ out151.stdout }}
+
+  - name: Ensure ownership of /etc/group is configured 
+    shell: grep root {{ groupout }}
+    register: out152
+    failed_when: >
+      'root root'  not in out152.stdout
+  # - debug: msg={{ out152.stdout }}
+
+  - name: review /etc/group
+    shell: cat {{ group }}
+    register: out153
+    failed_when: out153.stdout == ''
+  # - debug: msg={{ out153.stdout }}
+
+

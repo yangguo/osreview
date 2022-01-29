@@ -1,0 +1,15 @@
+---
+
+- name: ansible playbook
+  ignore_errors: yes
+  hosts: localhost
+
+  tasks:
+  - include_vars: file_vars.yaml
+  
+  - name: Check world writeable permissions on the directories
+    shell: cat {{ worldwritable }}
+    register: out101
+    failed_when: out101.stdout != ''
+  # - debug: msg={{ out101.stdout }}
+

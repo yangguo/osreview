@@ -10,3 +10,15 @@ crondenyout: ../output/CRON.DENY-perm.txt
 crondeny: ../output/CRON.DENY-file.txt
 varspoolcron: ../output/var-spool-cron.txt
 keydirs: ../output/keydirs.txt
+worldwritable: ../output/worldwritable.txt
+osversion: ../output/os-version.txt
+inetdconf: ../output/INETD.CONF-file.txt
+hostsequiv: ../output/HOSTS.EQUIV-file.txt
+netrc: ../output/netrc.txt
+rhosts: ../output/rhosts.txt
+xinetd: ../output/xinetd.txt
+netstat: ../output/netstat.txt
+syslogconf: ../output/SYSLOG.CONF-file.txt
+logs: ../output/loginlogs.txt
+groupout: ../output/GROUP-perm.txt
+group: ../output/GROUP-file.txt

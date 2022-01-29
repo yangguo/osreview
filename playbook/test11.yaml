@@ -1,0 +1,15 @@
+---
+
+- name: ansible playbook
+  ignore_errors: yes
+  hosts: localhost
+
+  tasks:
+  - include_vars: file_vars.yaml
+  
+  - name: Check os version
+    shell: cat {{ osversion }}
+    register: out111
+    failed_when: out111.stdout == ''
+  # - debug: msg={{ out111.stdout }}
+

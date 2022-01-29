@@ -1,0 +1,21 @@
+---
+
+- name: ansible playbook
+  ignore_errors: yes
+  hosts: localhost
+
+  tasks:
+  - include_vars: file_vars.yaml
+  
+  - name: Check xinetd.d configuration
+    shell: cat {{ xinetd }}
+    register: out131
+    failed_when: out131.stdout == ''
+  # - debug: msg={{ out131.stdout }}
+
+  - name: Check all the running services
+    shell: cat {{ netstat }}
+    register: out132
+    failed_when: out132.stdout == ''
+  # - debug: msg={{ out132.stdout }}
+
