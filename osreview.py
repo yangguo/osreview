@@ -285,3 +285,10 @@ def os_config_files_review(playbook):
     # print("Final status:")
     # print(r.stats)
     return taskls, outputls, r.stats
+
+# delete all txt files in upload folder
+def delete_all_txt_files():
+    # delete all txt files
+    for f in os.listdir(uploadfolder):
+        if f.endswith('.txt'):
+            os.remove(os.path.join(uploadfolder, f))

@@ -1,7 +1,7 @@
 from cProfile import label
 import streamlit as st
 import pandas as pd
-from osreview import save_osfile, extract_review_files,os_config_files_review
+from osreview import save_osfile, extract_review_files,os_config_files_review,delete_all_txt_files
 
 def main():
 
@@ -99,6 +99,8 @@ def main():
         st.subheader('检查结果')
         st.download_button(data=alldf.to_csv(index=False),label='下载检查结果',file_name='osreview.csv')
  
+        # delete all txt files
+        delete_all_txt_files()
 
 
 if __name__ == '__main__':
