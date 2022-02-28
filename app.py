@@ -1,11 +1,14 @@
-from distutils import filelist
 import streamlit as st
 import pandas as pd
 import pytesseract
-import numpy as np
-from PIL import Image
+from PIL import Image,ImageOps
 
 from osreview import save_osfile, extract_review_files, os_config_files_review, delete_all_txt_files
+
+from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+
+print_processor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-printed')
+print_model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-printed')
 
 picfilelist = [
     'PASSWD-perm',
@@ -32,6 +35,19 @@ picfilelist = [
     'GROUP-perm',
     'GROUP-file',
 ]
+
+def show_image(url):
+  img = Image.open(url).convert("RGB")
+  #display(img)
+  inverted_image = ImageOps.invert(img)
+  return inverted_image 
+  
+
+def ocr_print_image(img_path):
+  src_img = show_image(img_path)
+  pixel_values = print_processor(images=src_img, return_tensors="pt").pixel_values
+  generated_ids = print_model.generate(pixel_values)
+  return print_processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
 
 def ocr2text(img_path):
@@ -98,7 +114,10 @@ def main():
             # display image
             st.image(uploaded_file, use_column_width=True)
             # read file and convert to text
-            file_text = ocr2text(uploaded_file)
+            #file_text = ocr2text(uploaded_file)
+            inverted_image=show_image(uploaded_file)
+            st.image(inverted_image)
+            file_text= ocr_print_image(uploaded_file)
             save_text = st.text_area('文件内容', file_text)
 
             # choose file using dropdown
@@ -123,7 +142,8 @@ def main():
         if picture is not None:
             st.image(picture)
             # ocr the picture using tesseract
-            ocr_text = ocr2text(picture)
+            #ocr_text = ocr2text(picture)
+            ocr_text = ocr_print_image(picture)
             st.text(ocr_text)
             # save button
             filesave = st.sidebar.button('文件保存')
