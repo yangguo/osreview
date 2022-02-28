@@ -4,5 +4,5 @@ ansible
 pytesseract
 transformers
 sentencepiece
-streamlit
+streamlit>=1.4
 torch

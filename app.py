@@ -1,11 +1,15 @@
+import imp
 import streamlit as st
 import pandas as pd
 import pytesseract
 from PIL import Image,ImageOps
-
+import os
 from osreview import save_osfile, extract_review_files, os_config_files_review, delete_all_txt_files
 
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+
+## install PyTesseract
+os.system('sudo apt-get install tesseract-ocr')
 
 print_processor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-printed')
 print_model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-printed')
@@ -114,10 +118,10 @@ def main():
             # display image
             st.image(uploaded_file, use_column_width=True)
             # read file and convert to text
-            #file_text = ocr2text(uploaded_file)
-            inverted_image=show_image(uploaded_file)
-            st.image(inverted_image)
-            file_text= ocr_print_image(uploaded_file)
+            file_text = ocr2text(uploaded_file)
+            # inverted_image=show_image(uploaded_file)
+            # st.image(inverted_image)
+            # file_text= ocr_print_image(uploaded_file)
             save_text = st.text_area('文件内容', file_text)
 
             # choose file using dropdown
@@ -142,8 +146,8 @@ def main():
         if picture is not None:
             st.image(picture)
             # ocr the picture using tesseract
-            #ocr_text = ocr2text(picture)
-            ocr_text = ocr_print_image(picture)
+            ocr_text = ocr2text(picture)
+            # ocr_text = ocr_print_image(picture)
             st.text(ocr_text)
             # save button
             filesave = st.sidebar.button('文件保存')
