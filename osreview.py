@@ -1,5 +1,7 @@
+import imp
 import os, io, re
 import ansible_runner
+import streamlit as st
 
 uploadfolder = 'output/'
 playbookpath = 'playbook/'
@@ -10,22 +12,33 @@ def save_osfile(file_name, file_text):
     file_bytes = bytes(file_text, encoding="utf8")
     file_io = io.BytesIO(file_bytes)
     file_io.name = file_name + '.txt'
-
-    with open(os.path.join(uploadfolder, file_io.name), "wb") as f:
-        f.write(file_io.getbuffer())
-    # return st.success("上传文件:{} 成功。".format(file_io.name))
+    # save file to upload folder if file not exists and not empty
+    if (not os.path.exists(uploadfolder + file_io.name)) and file_text != '':
+        with open(uploadfolder + file_io.name, 'wb') as f:
+            f.write(file_bytes)
+    # if not os.path.exists(uploadfolder + file_io.name):
+    #     with open(os.path.join(uploadfolder, file_io.name), "wb") as f:
+    #         f.write(file_io.getbuffer())
 
 
 # read file text string from local
 def read_file_text(file_path):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return f.read()
+    # if file exists
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as f:
+            text = f.read()
+        return text
+    else:
+        return ''
 
 
 # save file text string to local
 def save_file_text(file_path, text):
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.write(text)
+    # save file to upload folder if file not exists
+    if not os.path.exists(file_path):
+        with open(file_path, 'w') as f:
+            f.write(text)
+
 
 # extract text by regex 
 def extract_text_by_regex(text, regex):
@@ -34,7 +47,7 @@ def extract_text_by_regex(text, regex):
     if match:
         return match.group(1)
     else:
-        return 'None'
+        return ''
 
 # extract text by regex and return two groups
 def extract_text_by_regex_two_groups(text, regex):
@@ -43,7 +56,7 @@ def extract_text_by_regex_two_groups(text, regex):
     if match:
         return match.group(1), match.group(2)
     else:
-        return 'None', 'None'
+        return '', ''
 
 # extract all match by regex and return three group lists
 def extract_text_by_regex_two_groups_all(text, regex):

@@ -1,20 +1,58 @@
-from cProfile import label
+from distutils import filelist
 import streamlit as st
 import pandas as pd
-from osreview import save_osfile, extract_review_files,os_config_files_review,delete_all_txt_files
+import pytesseract
+import numpy as np
+from PIL import Image
+
+from osreview import save_osfile, extract_review_files, os_config_files_review, delete_all_txt_files
+
+picfilelist = [
+    'PASSWD-perm',
+    'PASSWD-file',
+    'SHADOW-perm',
+    'SHADOW-file',
+    'LOGIN.DEFS-file',
+    'CRON.ALLOW-perm',
+    'CRON.ALLOW-file',
+    'CRON.DENY-perm',
+    'CRON.DENY-file',
+    'var-spool-cron',
+    'keydirs',
+    'worldwritable',
+    'os-version',
+    'INETD.CONF-file',
+    'HOSTS.EQUIV-file',
+    'netrc',
+    'rhosts',
+    'xinetd',
+    'netstat',
+    'SYSLOG.CONF-file',
+    'loginlogs',
+    'GROUP-perm',
+    'GROUP-file',
+]
+
+
+def ocr2text(img_path):
+    img = Image.open(img_path)
+    text = pytesseract.image_to_string(img)
+    return text
+
 
 def main():
 
-    # choose input method of manual or upload file
-    input_method = st.sidebar.radio('选择输入方式', ('手动输入', '上传文件'))
+    # choose input method of manual or upload file or camera
+    input_method = st.sidebar.selectbox('选择输入方式',
+                                        ['手动输入', '文件上传', '图片识别', '摄像头'])
 
     if input_method == '手动输入':
         output_text = st.text_area('主输出文件 包括：SHADOW/PASSWD/GROUP等')
         module_text = st.text_area('模块输出文件 包括：LOGIN.DEFS/CROND等')
-        keydirs_text=st.text_area('主要目录文件 包括：/bin/dev/etc/usr/var等')
-        worldwritable_text=st.text_area('全局可写目录 包括：rw等')
-        userfiles_text=st.text_area('用户文件 包括：/rhosts/netrc/profile等')
-        logs_text=st.text_area('日志文件 包括：/var/log/messages/secure等')
+        keydirs_text = st.text_area('主要目录文件 包括：/bin/dev/etc/usr/var等')
+        worldwritable_text = st.text_area('全局可写目录 包括：rw等')
+        userfiles_text = st.text_area('用户文件 包括：/rhosts/netrc/profile等')
+        logs_text = st.text_area('日志文件 包括：/var/log/messages/secure等')
         # save button
         filesave = st.sidebar.button('文件保存')
         if filesave:
@@ -33,56 +71,108 @@ def main():
             save_osfile(logs_name, logs_text)
             st.sidebar.success('文件保存成功')
 
-   
-    elif input_method == '上传文件':
+    elif input_method == '文件上传':
         # upload file
         uploaded_file = st.file_uploader("上传文件")
 
         # choose file using dropdown
-        file_name = st.sidebar.selectbox('选择文件类型', ('output', 'module', 'keydirs', 'worldwritable', 'userfiles', 'logs'))
+        file_name = st.sidebar.selectbox(
+            '选择文件类型', ('output', 'module', 'keydirs', 'worldwritable',
+                       'userfiles', 'logs'))
 
-        # save button
-        filesave = st.sidebar.button('文件保存')
-        if filesave:
-            if uploaded_file is not None:
+        if uploaded_file is not None:
+            # save button
+            filesave = st.sidebar.button('文件保存')
+            if filesave:
                 # read file
                 file_text = uploaded_file.read().decode("utf-8")
-                save_osfile(file_name,file_text)
-                st.sidebar.success('文件保存成功')
-            else:
-                st.sidebar.error('请选择文件')
+                save_osfile(file_name, file_text)
+                st.success('文件保存成功')
+        else:
+            st.error('请选择文件')
 
-    # config file review
+    elif input_method == '图片识别':
+        # upload file
+        uploaded_file = st.file_uploader("上传图片")
+        if uploaded_file is not None:
+            # display image
+            st.image(uploaded_file, use_column_width=True)
+            # read file and convert to text
+            file_text = ocr2text(uploaded_file)
+            save_text = st.text_area('文件内容', file_text)
+
+            # choose file using dropdown
+            file_name = st.sidebar.selectbox('选择文件类型', picfilelist)
+
+            # save button
+            filesave = st.sidebar.button('文件保存')
+            if filesave:
+                # save file
+                save_osfile(file_name, save_text)
+                st.success('文件保存成功: ' + file_name)
+        else:
+            st.error('请选择文件')
+
+    elif input_method == '摄像头':
+        # open camera and take picture
+        picture = st.camera_input("请拍摄照片")
+
+        # choose file using dropdown
+        file_name = st.sidebar.selectbox('选择文件类型', picfilelist)
+
+        if picture is not None:
+            st.image(picture)
+            # ocr the picture using tesseract
+            ocr_text = ocr2text(picture)
+            st.text(ocr_text)
+            # save button
+            filesave = st.sidebar.button('文件保存')
+            if filesave:
+                # save file
+                save_osfile(file_name, ocr_text)
+                st.success('文件保存成功: ' + file_name)
+        else:
+            st.error('请拍摄照片')
+
+    # # config file extraction button
+    # config_extract = st.sidebar.button('配置文件解析')
+    # if config_extract:
+
     config_review = st.sidebar.button('配置文件检查')
     if config_review:
-        namels, permoutputls, fileoutputls=extract_review_files()
+        namels, permoutputls, fileoutputls = extract_review_files()
         st.sidebar.success('提取配置信息成功')
         st.subheader('系统配置信息')
         # print extraction result
-        for name, permoutput, fileoutput in zip(namels, permoutputls, fileoutputls):
+        for name, permoutput, fileoutput in zip(namels, permoutputls,
+                                                fileoutputls):
             st.warning(name)
             st.write(permoutput)
             # display raw text
             st.text(fileoutput)
 
         # get full result
-        resls=[]
+        resls = []
         with st.spinner('检查配置中...'):
             # get playbook list from 1 to 15
             for i in range(1, 16):
                 # get playbook name
-                playbook_name = 'test' + str(i)+'.yaml'
+                playbook_name = 'test' + str(i) + '.yaml'
                 # get playbook content
-                taskls,outputls,stats=os_config_files_review(playbook_name)
+                taskls, outputls, stats = os_config_files_review(playbook_name)
                 # st.write(taskls)
                 # st.write(outputls)
                 # st.write(stats)
-                testname='test'+str(i)
+                testname = 'test' + str(i)
                 # convert taskls and outputls to dataframe
-                resdf=pd.DataFrame({'name':testname,'task':taskls,'output':outputls})
+                resdf = pd.DataFrame({
+                    'name': testname,
+                    'task': taskls,
+                    'output': outputls
+                })
                 # convert stats to dataframe
-                statdf=pd.DataFrame(stats)
-                st.subheader('检查结果'+str(i))
+                statdf = pd.DataFrame(stats)
+                st.subheader('检查结果' + str(i))
                 st.table(resdf)
                 resls.append(resdf)
                 # display raw text
@@ -92,13 +182,15 @@ def main():
                 # st.subheader('检查统计'+str(i))
                 # st.table(statdf)
                 # print success message
-                st.sidebar.success('检查完成'+str(i))
+                st.sidebar.success('检查完成' + str(i))
         # combine all dataframe
-        alldf=pd.concat(resls)
+        alldf = pd.concat(resls)
         # download csv file
         st.subheader('检查结果')
-        st.download_button(data=alldf.to_csv(index=False),label='下载检查结果',file_name='osreview.csv')
- 
+        st.download_button(data=alldf.to_csv(index=False),
+                           label='下载检查结果',
+                           file_name='osreview.csv')
+
         # delete all txt files
         delete_all_txt_files()
 

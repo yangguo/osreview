@@ -1,3 +1,4 @@
 pandas
 ansible-runner
 ansible
+pytesseract
