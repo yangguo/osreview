@@ -1,15 +1,33 @@
-import imp
 import streamlit as st
 import pandas as pd
 import pytesseract
 from PIL import Image,ImageOps
+import numpy as np
 import os
 from osreview import save_osfile, extract_review_files, os_config_files_review, delete_all_txt_files
 
-from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+from transformers import OPENAI_GPT_PRETRAINED_CONFIG_ARCHIVE_MAP, TrOCRProcessor, VisionEncoderDecoderModel
+import cv2
+
+def img2contour(img):
+    # img = cv2.imread(img_path)
+ 
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, img = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    img = cv2.bitwise_not(img)
+
+    cnts, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    # sort the cnts bigger width first
+    # cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
+    cnts=sorted(cnts,key=lambda c: cv2.boundingRect(c)[2], reverse=True)
+
+    return cnts
+
+
 
 ## install PyTesseract
-os.system('sudo apt-get install tesseract-ocr')
+# os.system('sudo apt-get install tesseract-ocr')
 
 print_processor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-printed')
 print_model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-printed')
@@ -47,8 +65,8 @@ def show_image(url):
   return inverted_image 
   
 
-def ocr_print_image(img_path):
-  src_img = show_image(img_path)
+def ocr_print_image(src_img):
+#   src_img = show_image(img_path)
   pixel_values = print_processor(images=src_img, return_tensors="pt").pixel_values
   generated_ids = print_model.generate(pixel_values)
   return print_processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
@@ -56,7 +74,9 @@ def ocr_print_image(img_path):
 
 def ocr2text(img_path):
     img = Image.open(img_path)
-    text = pytesseract.image_to_string(img)
+    # add config
+    config = r'--oem 3 --psm 4 -l eng+chi_sim'
+    text = pytesseract.image_to_string(img, config=config)
     return text
 
 
@@ -121,20 +141,61 @@ def main():
             file_text = ocr2text(uploaded_file)
             # inverted_image=show_image(uploaded_file)
             # st.image(inverted_image)
+            # bytes_data = uploaded_file.getvalue()
+            # cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
+            # st.image(cv2_img)
+            # inverte the image
+            # inverted_image = cv2.bitwise_not(cv2_img)
+            # st.image(inverted_image)
+            # st.image(~cv2_img)
+            # Creating a copy of image
+            # im2 = inverted_image.copy()
+            # contours=img2contour(im2)
+            
+            # get the 2 big lines
+            # lines = [cv2.boundingRect(contours[0]), cv2.boundingRect(contours[1])]
+            # higher line first
+            # lines.sort(key=lambda c: c[1])
+            # croping the img
+            # crop_img = im2[lines[0][1]:lines[1][1]]
+            # st.image(crop_img)
+
+
+            # txtls=[]
+            # show contours
+            # for i,cnt in enumerate(contours):
+
+            #     # get the 2 big lines
+            #     lines = [cv2.boundingRect(contours[i]), cv2.boundingRect(contours[i+1])]
+            #     # higher line first
+            #     lines.sort(key=lambda c: c[1])
+            #     # croping the img
+            #     crop_img = im2[lines[0][1]:lines[1][1]]
+            #     st.image(crop_img)
+              
+            #     # st.image(cropped)
+            #     # txt=ocr_print_image(cropped)
+            #     txt=str(crop_img)
+            #     # st.text(txt)
+            #     txtls.append(txt)
+
             # file_text= ocr_print_image(uploaded_file)
-            save_text = st.text_area('文件内容', file_text)
-
-            # choose file using dropdown
-            file_name = st.sidebar.selectbox('选择文件类型', picfilelist)
-
-            # save button
-            filesave = st.sidebar.button('文件保存')
-            if filesave:
-                # save file
-                save_osfile(file_name, save_text)
-                st.success('文件保存成功: ' + file_name)
+            # file_text = '\n'.join(txtls)
         else:
-            st.error('请选择文件')
+            st.error('请选择文件进行识别或手工输入')
+            file_text = ''
+
+        save_text = st.text_area('文件内容', file_text)
+
+        # choose file using dropdown
+        file_name = st.sidebar.selectbox('选择文件类型', picfilelist)
+
+        # save button
+        filesave = st.sidebar.button('文件保存')
+        if filesave:
+            # save file
+            save_osfile(file_name, save_text)
+            st.success('文件保存成功: ' + file_name)
 
     elif input_method == '摄像头':
         # open camera and take picture
