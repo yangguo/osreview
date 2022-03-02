@@ -6,4 +6,4 @@ transformers
 sentencepiece
 streamlit>=1.4
 torch
-opencv-python
+opencv-python-headless
