@@ -29,8 +29,8 @@ def img2contour(img):
 ## install PyTesseract
 # os.system('sudo apt-get install tesseract-ocr')
 
-print_processor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-printed')
-print_model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-printed')
+# print_processor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-printed')
+# print_model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-printed')
 
 picfilelist = [
     'PASSWD-perm',
@@ -65,11 +65,11 @@ def show_image(url):
   return inverted_image 
   
 
-def ocr_print_image(src_img):
-#   src_img = show_image(img_path)
-  pixel_values = print_processor(images=src_img, return_tensors="pt").pixel_values
-  generated_ids = print_model.generate(pixel_values)
-  return print_processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+# def ocr_print_image(src_img):
+# #   src_img = show_image(img_path)
+#   pixel_values = print_processor(images=src_img, return_tensors="pt").pixel_values
+#   generated_ids = print_model.generate(pixel_values)
+#   return print_processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
 
 def ocr2text(img_path):
