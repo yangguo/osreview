@@ -7,3 +7,4 @@ sentencepiece
 streamlit>=1.6.0
 torch
 opencv-python-headless
+streamlit_cropper
