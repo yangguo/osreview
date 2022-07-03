@@ -135,4 +135,10 @@ dmypy.json
 .VSCodeCounter
 .vscode
 **/artifacts
+*.png
 
+# ignore trunk files
+.trunk
+.flake8
+.isort.cfg
+.markdownlint.yaml
